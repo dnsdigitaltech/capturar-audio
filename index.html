@@ -1,0 +1,55 @@
+<html>
+    <header>
+        <title>Capturar áudio e salvar</title>
+    </header>
+    <body>
+        <button type="button" id="btn">Iniciar</button>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    </body>
+</html>
+
+<script>
+  $(function()
+  {
+    let mediaRecorder
+
+    navigator
+        .mediaDevices
+        .getUserMedia({ audio: true }).then(
+            (stream) => {
+                mediaRecorder = new MediaRecorder(stream)
+                let chunks = []
+                mediaRecorder.ondataavailable = data => {
+                    chunks.push(data.data)
+                }
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'audio/ogg; code=opus' })
+                    const reader = new window.FileReader()
+                    reader.readAsDataURL(blob)
+                    reader.onloadend = () => {
+                        //console.log(reader.result) Base 64
+                        const audio = document.createElement('audio')
+                        audio.src = reader.result
+                        audio.controls = true
+                        $('body').append(audio)
+                    }
+                }
+                //caso queira iniciar automático e parar depois de algum tempo
+                // mediaRecorder.start()
+                // setTimeout(() => mediaRecorder.stop(), 3000)
+        },
+        (err) => {
+            $('body').append('<p>Error: Verifique se seu áudio está habilitado!</p>')
+        })
+        $('#btn').click(function(){
+            if($(this).text() === 'Iniciar'){
+                mediaRecorder.start()
+                $(this).text('Stop')
+            }else{
+                mediaRecorder.stop()
+                $(this).text('Iniciar')
+            }
+        })
+
+  })
+</script>
