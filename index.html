@@ -1,55 +1,170 @@
 <html>
     <header>
         <title>Capturar áudio e salvar</title>
+        <style>
+            /* Resetando margens e bordas para padronizar o estilo */
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: 'Arial', sans-serif;
+            }
+
+            /* Centralizando o conteúdo da página */
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: #282c34;
+                color: white;
+            }
+
+
+            h1 {
+                font-size: 2.5rem;
+                margin-bottom: 20px;
+            }
+
+            /* Estilo da exibição do cronômetro */
+            #cronometro {
+                font-size: 3rem;
+                margin-bottom: 20px;
+                color: #00d8ff;
+            }
+
+            /* Estilo dos botões */
+            .botoes button {
+                padding: 10px 20px;
+                margin: 10px;
+                font-size: 1.2rem;
+                border: none;
+                border-radius: 10px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+
+            /* Efeito de hover nos botões */
+            .botoes button:hover {
+                opacity: 0.8;
+            }
+
+            /* Efeito de clique nos botões */
+            .botoes button:active {
+                transform: scale(0.98);
+            }
+        </style>
     </header>
     <body>
-        <button type="button" id="btn">Iniciar</button>
+        
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+        <div class="container">
+            <h1>Cronômetro JavaScript</h1>
+            <div id="cronometro">00:00:00</div>
+            <div class="botoes">
+            <button type="button" id="btn">Iniciar</button>
+        </div>
+        </div>
     </body>
 </html>
 
 <script>
-  $(function()
-  {
-    let mediaRecorder
+    $(function()
+    {
+        $('#btn').show()
+        let mediaRecorder
 
-    navigator
-        .mediaDevices
-        .getUserMedia({ audio: true }).then(
-            (stream) => {
-                mediaRecorder = new MediaRecorder(stream)
-                let chunks = []
-                mediaRecorder.ondataavailable = data => {
-                    chunks.push(data.data)
+        navigator
+            .mediaDevices
+            .getUserMedia({ audio: true }).then(
+                (stream) => {
+                    mediaRecorder = new MediaRecorder(stream)
+                    let chunks = []
+                    mediaRecorder.ondataavailable = data => {
+                        chunks.push(data.data)
+                    }
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(chunks, { type: 'audio/ogg; code=opus' })
+                        const reader = new window.FileReader()
+                        reader.readAsDataURL(blob)
+                        reader.onloadend = () => {
+                            //console.log(reader.result) Base 64
+                            const audio = document.createElement('audio')
+                            audio.src = reader.result
+                            audio.controls = true
+                            $('body').append(audio)
+                        }
+                    }
+                    //caso queira iniciar automático e parar depois de algum tempo
+                    // mediaRecorder.start()
+                    // setTimeout(() => mediaRecorder.stop(), 3000)
+            },
+            (err) => {
+                $('#btn').hide()
+                $('body').append('<p>Error: Verifique se seu áudio está habilitado!</p>')
+            })
+            $('#btn').click(function(){
+                if($(this).text() === 'Iniciar'){
+                    mediaRecorder.start()
+                    $(this).text('Stop')
+                    iniciarParar()
+                }else{
+                    mediaRecorder.stop()
+                    $(this).text('Iniciar')
+                    resetar()
                 }
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'audio/ogg; code=opus' })
-                    const reader = new window.FileReader()
-                    reader.readAsDataURL(blob)
-                    reader.onloadend = () => {
-                        //console.log(reader.result) Base 64
-                        const audio = document.createElement('audio')
-                        audio.src = reader.result
-                        audio.controls = true
-                        $('body').append(audio)
+            })
+
+    })
+
+
+
+  // Variáveis para armazenar o temporizador e o estado do cronômetro
+    let temporizador;
+    let emExecucao = false;
+    let [horas, minutos, segundos] = [0, 0, 0];
+
+    // Função que atualiza o display do cronômetro na tela
+    function atualizarDisplay() {
+        document.getElementById('cronometro').textContent =
+            `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+    }
+
+    // Função que controla o início e parada do cronômetro
+    function iniciarParar() {
+        if (emExecucao) {
+            // Se o cronômetro está em execução, paramos o temporizador
+            clearInterval(temporizador);
+            document.getElementById('botaoIniciarParar').textContent = 'Iniciar';
+        } else {
+            // Caso contrário, iniciamos o temporizador para incrementar os segundos a cada segundo
+            temporizador = setInterval(() => {
+                segundos++;
+                if (segundos === 60) {
+                    segundos = 0;
+                    minutos++;
+                    if (minutos === 60) {
+                        minutos = 0;
+                        horas++;
                     }
                 }
-                //caso queira iniciar automático e parar depois de algum tempo
-                // mediaRecorder.start()
-                // setTimeout(() => mediaRecorder.stop(), 3000)
-        },
-        (err) => {
-            $('body').append('<p>Error: Verifique se seu áudio está habilitado!</p>')
-        })
-        $('#btn').click(function(){
-            if($(this).text() === 'Iniciar'){
-                mediaRecorder.start()
-                $(this).text('Stop')
-            }else{
-                mediaRecorder.stop()
-                $(this).text('Iniciar')
-            }
-        })
+                atualizarDisplay(); // Atualiza o display com os novos valores
+            }, 1000);
+            document.getElementById('botaoIniciarParar').textContent = 'Parar';
+        }
+        emExecucao = !emExecucao; // Alterna o estado do cronômetro (executando/parado)
+    }
 
-  })
+    // Função que reseta o cronômetro para o valor inicial 00:00:00
+    function resetar() {
+        clearInterval(temporizador); // Para o temporizador
+        [horas, minutos, segundos] = [0, 0, 0]; // Reseta os valores
+        atualizarDisplay(); // Atualiza o display com os valores zerados
+        document.getElementById('botaoIniciarParar').textContent = 'Iniciar';
+        emExecucao = false; // Define o estado como parado
+    }
+
+
+
 </script>
