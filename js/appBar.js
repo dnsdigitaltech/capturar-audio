@@ -119,10 +119,9 @@ function visualize(stream) {
   const source = audioCtx.createMediaStreamSource(stream);
   const analyser = audioCtx.createAnalyser();
   analyser.fftSize = 1024;
+  source.connect(analyser);
   const bufferLength = analyser.frequencyBinCount;
   const dataArray = new Uint8Array(bufferLength);
-
-  source.connect(analyser);
 
   function draw() {
     const WIDTH = canvas.width;
@@ -130,7 +129,7 @@ function visualize(stream) {
 
     requestAnimationFrame(draw);
 
-    analyser.getByteTimeDomainData(dataArray);
+    analyser.getByteFrequencyData(dataArray);
 
     canvasCtx.fillStyle = "rgb(255, 255, 255)";
     canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
