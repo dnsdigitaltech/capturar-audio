@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Gravador de voz com gráfico de barra em tempo real</title>
+    <link href="css/app.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+
+    <div class="wrapper">
+
+      <header>
+        <h1>Gravador de voz com gráfico de barra em tempo real</h1>
+      </header>
+
+      <section class="main-controls">
+        <canvas class="visualizer"></canvas>
+        <div id="buttons">
+          <button class="record">Gravar</button>
+          <button class="stop">Parar</button>
+        </div>
+      </section>
+
+      <section class="sound-clips"></section>
+
+    </div>
+
+    <label for="toggle" title="Ajuda">❔</label>
+    <input type="checkbox" id="toggle">
+    <aside>
+      <h2>Informações importante</h2>
+
+      <p>O gravador de voz foi construído usando  <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator.getUserMedia">getUserMedia</a> e a <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder_API">MediaRecorder API</a>, que fornece uma maneira mais fácil de capturar fluxos de mídia.</p>
+    </aside>
+    <script src="js/appBar.js"></script>
+
+  </body>
+</html>
